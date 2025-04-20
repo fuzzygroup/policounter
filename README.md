@@ -4,8 +4,10 @@ crowd size estimate tool
 
 ## requirements
 
- * python
- * django
- * pytorch
- 
- 
+- numpy>=1.14.0
+- torch>=1.6
+- gdown>=3.10.1
+- torchvision
+- pillow>=8.0
+- django
+    - psycopg[binary]
