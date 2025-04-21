@@ -1,0 +1,9 @@
+{% if prediction_list %}
+<ul>
+    {% for prediction in prediction_list %}
+    <li><a href="/counter/{{ prediction.id }}/">{{ prediction }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No predictions are available.</p>
+{% endif %}
