@@ -3,18 +3,23 @@ from ..util.functions import weights_check
 import torch
 from torch import nn
 
+
 def make_model(model_weights):
     available_weights = ["SHB"]
 
     if model_weights not in available_weights:
-        raise ValueError("Weights {} not available for CSRNet. Available weights: {}".format(model_weights,
-                                                                                             available_weights))
+        raise ValueError(
+            "Weights {} not available for CSRNet. Available weights: {}".format(
+                model_weights, available_weights
+            )
+        )
     weights_path = weights_check("SFANet", model_weights)
 
     model = SFANet()
-    model.load_state_dict(torch.load(weights_path, map_location ='cpu')["model"])
+    model.load_state_dict(torch.load(weights_path, map_location="cpu")["model"])
 
     return model
+
 
 class SFANet(nn.Module):
     def __init__(self):
@@ -38,7 +43,7 @@ class SFANet(nn.Module):
         dmp_out = amp_out * dmp_out
         dmp_out = self.conv_out(dmp_out)
 
-        return dmp_out#, amp_out
+        return dmp_out  # , amp_out
 
 
 class VGG(nn.Module):
@@ -123,7 +128,9 @@ class BackEnd(nn.Module):
 
 
 class BaseConv(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel, stride=1, activation=None, use_bn=False):
+    def __init__(
+        self, in_channels, out_channels, kernel, stride=1, activation=None, use_bn=False
+    ):
         super(BaseConv, self).__init__()
         self.use_bn = use_bn
         self.activation = activation
@@ -144,7 +151,7 @@ class BaseConv(nn.Module):
         return input
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     input = torch.randn(8, 3, 400, 400).cuda()
     model = Model().cuda()
     output, attention = model(input)

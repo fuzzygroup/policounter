@@ -2,7 +2,7 @@ import setuptools
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
-    
+
 setuptools.setup(
     name="lwcc",
     version="0.0.6",
@@ -17,8 +17,14 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent"
+        "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    install_requires=["numpy>=1.14.0", "torch>=1.6.0", "gdown>=3.10.1", "torchvision>=0.7.0", "Pillow>=8.0.0"]
+    python_requires=">=3.6",
+    install_requires=[
+        "numpy>=1.14.0",
+        "torch>=1.6.0",
+        "gdown>=3.10.1",
+        "torchvision>=0.7.0",
+        "Pillow>=8.0.0",
+    ],
 )
