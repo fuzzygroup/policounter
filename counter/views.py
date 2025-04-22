@@ -4,6 +4,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 import os
+import uuid
 from io import BytesIO
 
 from PIL import Image
@@ -31,9 +32,13 @@ def estimate(request):
     if request.method == 'POST':
         form = PredictionForm(request.POST, request.FILES)
         if form.is_valid():
+            session_id = uuid.uuid4().hex
+
+            # probably janky -- I need the image before I can write the record
             uploaded_file = request.FILES['input_image']
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'inputs'))
-            filename = fs.save(uploaded_file.name, uploaded_file)
+            cacheDir = os.path.join(settings.MEDIA_ROOT, 'cache')
+            fs = FileSystemStorage(location=cacheDir)
+            filename = fs.save(f'{session_id}_{uploaded_file.name}', uploaded_file)
             input_image_path = fs.path(filename)
 
             # Perform prediction using input_image_path
@@ -46,21 +51,28 @@ def estimate(request):
             )
 
             # Prepare the model instance
-            prediction = form.save(commit=False)
+            prediction = form.save(commit=False)   # don't save or we'll error
             prediction.crowd_size_prediction = float(count)
-            prediction.input_image.name = os.path.join('inputs', filename)
-            prediction.save()
+            # this is bad but it works.  don't change.
+            prediction.input_image.name = filename
 
             density_normalized = (density - density.min()) / (density.max() - density.min())
             density_uint8 = (density_normalized * 255).astype(np.uint8)
-            density_image = Image.fromarray(density_uint8, mode='L')  # 'L' mode for grayscale
+            density_image = Image.fromarray(density_uint8)
 
+            # more jank but i have to have something in memory to write
             buffer = BytesIO()
             density_image.save(buffer, format='PNG')
-            prediction.density_map.save(uploaded_file.name, ContentFile(buffer.getvalue()), save=False)
-
-
+            out_name = f'{session_id}_density_map.png'
+            prediction.density_map.save(out_name, ContentFile(buffer.getvalue()), save=False)
             prediction.save()
+
+            try:
+                os.remove(input_image_path) # remove the cache file
+            except OSError as e:
+                # Log the error or handle it as needed
+                print(f"Error deleting file {input_image_path}: {e}")
+
             return redirect('counts:detail', pk=prediction.pk)
     else:
         form = PredictionForm()

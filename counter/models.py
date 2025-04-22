@@ -1,16 +1,8 @@
 from django.db import models
-import os
-import uuid
-
-def unique_upload_path(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    return os.path.join('inputs', filename)
-
 
 class Prediction(models.Model):
-    input_image = models.ImageField(upload_to=unique_upload_path)
-    density_map = models.ImageField(upload_to=unique_upload_path)
+    input_image = models.ImageField(upload_to='inputs')
+    density_map = models.ImageField(upload_to='density_maps')
     model_name = models.CharField(max_length=10)
     weight_selection = models.CharField(max_length=4)
     crowd_size_prediction = models.DecimalField(max_digits=10, decimal_places=2)
