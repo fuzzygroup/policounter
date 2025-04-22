@@ -56,13 +56,17 @@ def estimate(request):
             # this is bad but it works.  don't change.
             prediction.input_image.name = filename
 
+            # Load the original image to get its size
+            original_image = Image.open(input_image_path)
+            original_size = original_image.size  # (width, height)
+
             density_normalized = (density - density.min()) / (density.max() - density.min())
             density_uint8 = (density_normalized * 255).astype(np.uint8)
             density_image = Image.fromarray(density_uint8)
-
+            density_image_resized = density_image.resize(original_size)
             # more jank but i have to have something in memory to write
             buffer = BytesIO()
-            density_image.save(buffer, format='PNG')
+            density_image_resized.save(buffer, format='PNG')
             out_name = f'{session_id}_density_map.png'
             prediction.density_map.save(out_name, ContentFile(buffer.getvalue()), save=False)
             prediction.save()
