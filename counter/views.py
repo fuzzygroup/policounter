@@ -28,6 +28,10 @@ def detail(request, pk):
     prediction = get_object_or_404(Prediction, pk=pk)
     return render(request, 'counts/detail.html', {"prediction": prediction})
 
+def prediction_list(request):
+    predictions = Prediction.objects.all()
+    return render(request, 'counts/prediction_list.html', {'prediction_list': predictions})
+
 def estimate(request):
     if request.method == 'POST':
         form = PredictionForm(request.POST, request.FILES)

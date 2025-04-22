@@ -1,11 +1,19 @@
-{% extends "base.html" %} {% block content %} {% if prediction_list %}
-<ul>
-    {% for prediction in prediction_list %}
-    <li>
-        <a href="{% url 'counts:detail' prediction.id %}">{{ prediction }}</a>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No predictions are available.</p>
-{% endif %} {% endblock content %}
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5">Welcome to the Policount</h1>
+        <p class="lead">
+            Make a new estimate or browse through previous predictions.
+        </p>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 mb-5">
+        <a href="{% url 'counts:estimate' %}" class="btn btn-primary btn-lg"
+            >Make an Estimate</a
+        >
+        <a href="{% url 'counts:list' %}" class="btn btn-secondary btn-lg"
+            >View Previous Estimates</a
+        >
+    </div>
+    {% endblock content %}
+</div>
