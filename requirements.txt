@@ -1,0 +1,6 @@
+Django==4.2.20
+gdown==5.2.0
+numpy==2.2.5
+Pillow==11.2.1
+torch==2.6.0
+torchvision==0.21.0
