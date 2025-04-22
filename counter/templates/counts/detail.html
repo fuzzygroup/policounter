@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <h5>Input Image</h5>
+            <img
+                src="{{ prediction.input_image.url }}"
+                class="img-fluid rounded border"
+                alt="Input Image"
+            />
+        </div>
+        <div class="col-md-6 text-center">
+            <h5>Density Map</h5>
+            <img
+                src="{{ prediction.density_map.url }}"
+                class="img-fluid rounded border"
+                alt="Density Map"
+            />
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">City:</div>
+        <div class="col-sm-9">{{ prediction.event_city }}</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Event Date:</div>
+        <div class="col-sm-9">{{ prediction.event_date }}</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Crowd Size:</div>
+        <div class="col-sm-9">{{ prediction.crowd_size_prediction }}</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Model:</div>
+        <div class="col-sm-9">{{ prediction.model_name }}</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Weights:</div>
+        <div class="col-sm-9">{{ prediction.weight_selection }}</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Prediction Date:</div>
+        <div class="col-sm-9">{{ prediction.prediction_date }}</div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <a href="{% url 'counts:index' %}" class="btn btn-primary">Back to Index</a>
+</div>
+{% endblock content %}

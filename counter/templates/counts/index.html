@@ -1,9 +1,11 @@
-{% if prediction_list %}
+{% extends "base.html" %} {% block content %} {% if prediction_list %}
 <ul>
     {% for prediction in prediction_list %}
-    <li><a href="/counter/{{ prediction.id }}/">{{ prediction }}</a></li>
+    <li>
+        <a href="{% url 'counts:detail' prediction.id %}">{{ prediction }}</a>
+    </li>
     {% endfor %}
 </ul>
 {% else %}
 <p>No predictions are available.</p>
-{% endif %}
+{% endif %} {% endblock content %}
