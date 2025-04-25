@@ -1,6 +1,10 @@
 # policounter
 
-crowd size estimate tool
+## About
+
+Policounter is an open source crowd counting software designed to take crowd images from a camera, phone or drone and drive a website of images as well as build a data feed for algorithmic consumption.
+
+Built on django, and [lwcc](https://github.com/phwolf/lwcc)
 
 ## requirements
 
