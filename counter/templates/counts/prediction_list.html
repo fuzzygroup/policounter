@@ -1,25 +1,29 @@
-{% extends "base.html" %} {% block content %}
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+    <h1>Crowd Count Prediction Groups</h1>
 
-<div class="d-flex justify-content-center gap-3 mb-5">
-    {% if prediction_list %}
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Recent Predictions</h5>
+    <div class="list-group mb-4">
+        {% for group in group_list %}
+        <a
+            href="{% url 'counts:group_detail' group.pk %}"
+            class="list-group-item list-group-item-action"
+        >
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ group.event_city }}</h5>
+                <small>{{ group.upload_date|date:"Y-m-d H:i" }}</small>
+            </div>
+            <p class="mb-1">Event Date: {{ group.event_date }}</p>
+            <small>{{ group.predictions.count }} prediction(s)</small>
+        </a>
+        {% empty %}
+        <div class="list-group-item">
+            <p>No predictions available.</p>
         </div>
-        <ul class="list-group list-group-flush">
-            {% for prediction in prediction_list %}
-            <li class="list-group-item">
-                <a href="{% url 'counts:detail' prediction.id %}"
-                    >{{ prediction }}</a
-                >
-            </li>
-            {% endfor %}
-        </ul>
+        {% endfor %}
     </div>
-    {% else %}
-    <div class="alert alert-info text-center" role="alert">
-        No predictions are available.
-    </div>
-    {% endif %}
+
+    <a href="{% url 'counts:estimate' %}" class="btn btn-primary"
+        >New Prediction</a
+    >
 </div>
 {% endblock %}

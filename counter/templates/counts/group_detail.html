@@ -1,0 +1,59 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+    <h1>Crowd Count Predictions for {{ group.event_city }}</h1>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h3>Input Image</h3>
+            <img
+                src="{{ group.input_image.url }}"
+                alt="Input Image"
+                class="img-fluid"
+            />
+        </div>
+    </div>
+
+    <h3>Predictions:</h3>
+
+    <p>Date: {{ group.event_date }}</p>
+    <p>Uploaded: {{ group.upload_date }}</p>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Weight</th>
+                    <th>Crowd Size</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prediction in predictions %}
+                <tr>
+                    <td>{{ prediction.model_name }}</td>
+                    <td>{{ prediction.weight_selection }}</td>
+                    <td>{{ prediction.crowd_size_prediction }}</td>
+                    <td>
+                        <a
+                            href="{% url 'counts:detail' prediction.pk %}"
+                            class="btn btn-sm btn-primary"
+                            >View Details</a
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <a
+                href="{% url 'counts:prediction_list' %}"
+                class="btn btn-secondary"
+                >Back to List</a
+            >
+        </div>
+    </div>
+</div>
+{% endblock %}
