@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% block content %}
+<h1>{{ event.name }}</h1>
+<p>
+    <strong>Date:</strong> {{ event.date }}<br />
+    <strong>Location:</strong>
+    {{ event.location.city }}, {{ event.location.state }}
+</p>
+
+<h2>Observations</h2>
+{% if observations %}
+<ul>
+    {% for obs in observations %}
+    <li>
+        {{ obs.timestamp|date:"Y-m-d H:i" }}: {{ obs.count }} — {{
+        obs.get_method_display }}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p><em>No observations recorded for this event.</em></p>
+{% endif %}
+
+<p><a href="{% url 'counts:event_list' %}">&larr; Back to all events</a></p>
+{% endblock %}

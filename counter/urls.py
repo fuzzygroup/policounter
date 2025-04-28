@@ -5,8 +5,16 @@ from . import views
 app_name = "counts"
 urlpatterns = [
     path("", views.index, name="index"),
-    path('predictions/', views.prediction_list, name='prediction_list'),
-    path('prediction/<int:pk>/', views.prediction_detail, name='detail'),
-    path('group_detail/<int:pk>/', views.group_detail, name='group_detail'),
-    path('estimate/', views.estimate, name='estimate'),
+    # Event views
+    path('events/', views.event_list, name='event_list'),
+    path('events/<int:pk>/',       views.event_detail, name='event_detail'),
+    # Observation view
+    path('observations/<int:observation_id>/', views.observation_detail, name='observation_detail'),
+
+    # Prediction view
+    path('predictions/<int:prediction_id>/', views.prediction_detail, name='prediction_detail'),
+
+    # Location views
+    path('locations/', views.location_list, name='location_list'),
+    path('locations/<int:location_id>/', views.location_events, name='location_events'),
 ]
