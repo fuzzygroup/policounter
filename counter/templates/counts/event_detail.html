@@ -2,20 +2,42 @@
 <h1>{{ event.name }}</h1>
 <p>
     <strong>Date:</strong> {{ event.date }}<br />
-    <strong>Location:</strong>
-    {{ event.location.city }}, {{ event.location.state }}
+    <strong>Location:</strong> {{ event.location.city }}, {{ event.location.state }}
 </p>
 
 <h2>Observations</h2>
 {% if observations %}
-<ul>
-    {% for obs in observations %}
-    <li>
-        {{ obs.timestamp|date:"Y-m-d H:i" }}: {{ obs.count }} — {{
-        obs.get_method_display }}
-    </li>
-    {% endfor %}
-</ul>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Timestamp</th>
+                <th>Count</th>
+                <th>Method</th>
+                <th>Observer</th>
+                <th>Prediction</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obs in observations %}
+            <tr>
+                <td>{{ obs.timestamp|date:"Y-m-d H:i" }}</td>
+                <td>{{ obs.count }}</td>
+                <td>{{ obs.get_method_display }}</td>
+                <td>{{ obs.observer|default:"—" }}</td>
+                <td>
+                    {% if obs.prediction %} 
+		    	{{ obs.prediction }} 
+		    {% else %} — 
+		    {% endif %}
+                </td>
+                <td>{{ obs.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
 <p><em>No observations recorded for this event.</em></p>
 {% endif %}

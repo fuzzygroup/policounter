@@ -27,20 +27,6 @@ class Event(models.Model):
         unique_together = ['name', 'date', 'location']
 
 
-class Prediction(models.Model):
-    input_image = models.ImageField(upload_to='inputs')
-    density_map = models.ImageField(upload_to='density_maps')
-    model_name = models.CharField(max_length=50)
-    weight_selection = models.CharField(max_length=20)
-    prediction_date = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        if hasattr(self, 'observation'):
-            return f"{self.model_name} ({self.weight_selection}) – {self.observation.event.name}"
-        return f"{self.model_name} ({self.weight_selection}) – Unlinked Prediction"
-
-
 class Observation(models.Model):
     METHOD_CHOICES = [
         ('CLICKER', 'Hand count using clicker'),
@@ -53,14 +39,15 @@ class Observation(models.Model):
     timestamp = models.DateTimeField()
     method = models.CharField(max_length=20, choices=METHOD_CHOICES)
     observer = models.CharField(max_length=100, blank=True, null=True)
-    prediction = models.OneToOneField(Prediction, on_delete=models.SET_NULL, blank=True, null=True, related_name='observation')
+    # New fields moved from Prediction:
+    input_image = models.ImageField(upload_to='inputs', blank=True, null=True)
+    density_map = models.ImageField(upload_to='density_maps', blank=True, null=True)
+    model_name = models.CharField(max_length=50, blank=True, null=True)
+    weight_selection = models.CharField(max_length=20, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.prediction:
-            return f"AI Observation ({self.prediction.model_name}) - {self.event.name}"
-        else:
-            return f"{self.get_method_display()} by {self.observer} - {self.event.name}"
-
-    class Meta:
-        ordering = ['-timestamp']
+        if self.method == 'AI':
+            return f"AI Observation ({self.model_name}) - {self.event.name}"
+        return f"{self.get_method_display()} by {self.observer or 'Unknown'} - {self.event.name}"

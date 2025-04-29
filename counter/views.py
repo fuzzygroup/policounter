@@ -16,7 +16,7 @@ from django.views.generic import DetailView
 from policounter import settings
 from lwcc import LWCC
 
-from .models import Location, Event, Observation, Prediction
+from .models import Location, Event, Observation
 
 
 def index(request):
@@ -41,12 +41,6 @@ def observation_detail(request, observation_id):
     """View to display details of a specific observation, including prediction if available"""
     observation = get_object_or_404(Observation, pk=observation_id)
     return render(request, 'counts/observation_detail.html', {'observation': observation})
-
-
-def prediction_detail(request, prediction_id):
-    """View to display details of a specific prediction"""
-    prediction = get_object_or_404(Prediction, pk=prediction_id)
-    return render(request, 'counts/prediction_detail.html', {'prediction': prediction})
 
 
 def location_list(request):

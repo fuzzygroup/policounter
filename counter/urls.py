@@ -10,10 +10,6 @@ urlpatterns = [
     path('events/<int:pk>/',       views.event_detail, name='event_detail'),
     # Observation view
     path('observations/<int:observation_id>/', views.observation_detail, name='observation_detail'),
-
-    # Prediction view
-    path('predictions/<int:prediction_id>/', views.prediction_detail, name='prediction_detail'),
-
     # Location views
     path('locations/', views.location_list, name='location_list'),
     path('locations/<int:location_id>/', views.location_events, name='location_events'),

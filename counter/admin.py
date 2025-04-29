@@ -1,8 +1,7 @@
 from django.contrib import admin
-from .models import Location, Event, Observation, Prediction
+from .models import Location, Event, Observation
 
 admin.site.register(Location)
 admin.site.register(Event)
 admin.site.register(Observation)
-admin.site.register(Prediction)
 # Register your models here.
