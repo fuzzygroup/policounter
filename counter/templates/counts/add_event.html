@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Add New Event</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <label for="country">Country</label>
+        <select id="country" class="form-control"></select>
+        <label for="state">State</label>
+        <select id="state" class="form-control"></select>
+        <label for="city">City</label>
+        <select id="city" name="location" class="form-control"></select>
+        <button type="submit" class="btn btn-success mt-3">Create Event</button>
+        <a href="{% url 'counts:event_list' %}" class="btn btn-outline-success mt-2 ms-2">Cancel</a>
+    </form>
+</div>
+<script>
+  const locations = {{ locations_json|safe }};
+  const countrySelect = document.getElementById("country");
+  const stateSelect = document.getElementById("state");
+  const citySelect = document.getElementById("city");
+
+  // Register event listeners first
+  countrySelect.addEventListener("change", () => {
+    const selectedCountry = countrySelect.value;
+    const states = [...new Set(locations
+      .filter(loc => loc.country === selectedCountry)
+      .map(loc => loc.state))].sort();
+    stateSelect.innerHTML = "<option value=''>Select a state</option>";
+    citySelect.innerHTML = "<option value=''>Select a city</option>";
+    states.forEach(state => {
+      const opt = document.createElement("option");
+      opt.value = state;
+      opt.textContent = state;
+      stateSelect.appendChild(opt);
+    });
+  });
+
+  stateSelect.addEventListener("change", () => {
+    const selectedCountry = countrySelect.value;
+    const selectedState = stateSelect.value;
+
+    // Filter locations to the exact set that matches country and state
+    const filteredLocations = locations
+      .filter(loc => loc.country === selectedCountry && loc.state === selectedState);
+
+    // Get cities from these locations, but keep track of the location ID
+    citySelect.innerHTML = "<option value=''>Select a city</option>";
+
+    // Sort by city name before creating options
+    filteredLocations.sort((a, b) => a.city.localeCompare(b.city));
+
+    filteredLocations.forEach(loc => {
+      const opt = document.createElement("option");
+      opt.value = loc.pk;  // Use location primary key as value
+      opt.textContent = loc.city;
+      citySelect.appendChild(opt);
+    });
+  });
+
+  // Populate countries (sorted) and default to "United States"
+  const countries = [...new Set(locations.map(loc => loc.country))].sort();
+  countries.forEach(country => {
+    const opt = document.createElement("option");
+    opt.value = country;
+    opt.textContent = country;
+    if (country === "United States") {
+      opt.selected = true;
+    }
+    countrySelect.appendChild(opt);
+  });
+
+  // Trigger the chain for initial population
+  countrySelect.dispatchEvent(new Event("change"));
+</script>
+{% endblock %}

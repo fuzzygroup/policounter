@@ -15,7 +15,6 @@
                 <th>Count</th>
                 <th>Method</th>
                 <th>Observer</th>
-                <th>Prediction</th>
                 <th>Created At</th>
             </tr>
         </thead>
@@ -26,9 +25,6 @@
                 <td>{{ obs.count }}</td>
                 <td>{{ obs.get_method_display }}</td>
                 <td>{{ obs.observer|default:"—" }}</td>
-                <td>
-                    {% if obs.prediction %} {{ obs.prediction }} {% else %} — {% endif %}
-                </td>
                 <td>{{ obs.created_at|date:"Y-m-d H:i" }}</td>
             </tr>
             {% endfor %}

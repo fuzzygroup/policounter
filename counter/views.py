@@ -9,6 +9,8 @@ from io import BytesIO
 
 from PIL import Image
 from django.shortcuts import get_object_or_404, render, redirect
+from django.core.serializers import serialize
+from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.views.generic import DetailView
@@ -17,6 +19,7 @@ from policounter import settings
 from lwcc import LWCC
 
 from .models import Location, Event, Observation
+from .forms import EventForm
 
 
 def index(request):
@@ -37,9 +40,9 @@ def event_detail(request, pk):
         'observations': observations,
     })
 
-def observation_detail(request, observation_id):
+def observation_detail(request, pk):
     """View to display details of a specific observation, including prediction if available"""
-    observation = get_object_or_404(Observation, pk=observation_id)
+    observation = get_object_or_404(Observation, pk=pk)
     return render(request, 'counts/observation_detail.html', {'observation': observation})
 
 
@@ -56,4 +59,26 @@ def location_events(request, location_id):
     return render(request, 'counts/location_events.html', {
         'location': location,
         'events': events
+    })
+
+
+def add_event(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            # Add location manually
+            location_id = request.POST.get('location')
+            location = Location.objects.get(pk=location_id)
+            event = form.save(commit=False)
+            event.location = location
+            event.save()
+            return redirect('counts:event_list')
+    else:
+        form = EventForm()
+
+    # Prepare JSON for all locations
+    locations = Location.objects.all().values('pk', 'city', 'state', 'country')
+    return render(request, 'counts/add_event.html', {
+        'form': form,
+        'locations_json': list(locations),
     })
