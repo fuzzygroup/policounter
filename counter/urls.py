@@ -11,6 +11,7 @@ urlpatterns = [
     path('events/add/', views.add_event, name='add_event'),
     # Observation view
     path('observations/<int:pk>/', views.observation_detail, name='observation_detail'),
+     path('events/<int:event_id>/add-observation/', views.add_observation, name='add_observation'),
     # Location views
     path('locations/', views.location_list, name='location_list'),
     path('locations/<int:location_id>/', views.location_events, name='location_events'),

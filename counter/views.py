@@ -9,6 +9,7 @@ from io import BytesIO
 
 from PIL import Image
 from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
@@ -19,7 +20,7 @@ from policounter import settings
 from lwcc import LWCC
 
 from .models import Location, Event, Observation
-from .forms import EventForm
+from .forms import EventForm, ObservationForm
 
 
 def index(request):
@@ -81,4 +82,22 @@ def add_event(request):
     return render(request, 'counts/add_event.html', {
         'form': form,
         'locations_json': list(locations),
+    })
+
+def add_observation(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+
+    if request.method == 'POST':
+        form = ObservationForm(request.POST, request.FILES)
+        if form.is_valid():
+            observation = form.save(commit=False, event=event)
+            observation.save()
+            messages.success(request, "Observation added successfully!")
+            return redirect('counts:event_detail', pk=event.id)
+    else:
+        form = ObservationForm()
+
+    return render(request, 'counts/add_observation.html', {
+        'form': form,
+        'event': event,
     })

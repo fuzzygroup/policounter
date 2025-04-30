@@ -4,7 +4,6 @@
     <strong>Date:</strong> {{ event.date }}<br />
     <strong>Location:</strong> {{ event.location.city }}, {{ event.location.state }}
 </p>
-
 <h2>Observations</h2>
 {% if observations %}
 <div class="table-responsive">
@@ -30,10 +29,15 @@
             {% endfor %}
         </tbody>
     </table>
+
 </div>
 {% else %}
 <p><em>No observations recorded for this event.</em></p>
 {% endif %}
 
-<p><a href="{% url 'counts:event_list' %}">&larr; Back to all events</a></p>
+<!-- Add Observation Button -->
+<div class="d-flex justify-content-between mt-4 mb-3">
+    <a href="{% url 'counts:event_list' %}" class="btn btn-secondary">&larr; Back to all events</a>
+    <a href="{% url 'counts:add_observation' event.id %}" class="btn btn-primary">➕ Add Observation</a>
+</div>
 {% endblock %}

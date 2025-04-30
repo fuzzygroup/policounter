@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Add Observation for {{ event.name }}</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Observation Details</h5>
+            </div>
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="{{ form.count.id_for_label }}" class="form-label">Count *</label>
+                    {{ form.count }}
+                    {% if form.count.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.count.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Enter the count value (can include decimals)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.observer.id_for_label }}" class="form-label">Observer</label>
+                    {{ form.observer }}
+                    {% if form.observer.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.observer.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Enter your name or identifier (optional)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.input_image.id_for_label }}" class="form-label">Image (Optional)</label>
+                    {{ form.input_image }}
+                    {% if form.input_image.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.input_image.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Upload an image of the crowd (optional)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'counts:event_detail' event.id %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Observation</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
