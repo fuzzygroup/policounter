@@ -6,7 +6,7 @@ Policounter is an open source crowd counting software designed to take crowd ima
 
 ## Data model explanation
 
-An *Event* can have a series of *Observations* that include a crowd size *count*
+An **Event** takes place in a **Location** and can have a series of **Observations** that include a crowd size **count**
 
 ![](https://github.com/fuzzygroup/policounter/blob/main/doc/policounter_datamodel.png)
 
