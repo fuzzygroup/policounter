@@ -15,3 +15,247 @@ Built on django, and [lwcc](https://github.com/phwolf/lwcc)
 - pillow>=8.0
 - django
     - psycopg[binary]
+
+
+## Policounter Deployment Instructions
+
+### Prerequisites
+
+Before deploying Policounter, ensure you have the following prerequisites installed:
+
+* Python 3.8+
+* pip (Python package manager)
+* PostgreSQL database
+* Git
+* uWSGI and uWSGI Python3 plugin
+* Nginx
+
+### Installation Steps
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/policounter.git
+cd policounter
+```
+
+#### 2. Setup a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+#### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+pip install psycopg[binary]
+pip install django-bootstrap5
+```
+
+#### 4. Configure Database
+```bash
+createdb pcdb --owner=pcdbu;
+
+# Configure database settings in settings.py or .env file
+# Example .env configuration:
+# DB_NAME=pcdb
+# DB_USER=pcdbu
+# DB_PASSWORD=your_password
+# DB_HOST=localhost
+# DB_PORT=5432
+```
+
+#### 5. Create and run migrations
+```bash
+python3 manage.py makemigrations    #in my env python3 is linked to the virtual env interpreter
+python3 manage.py migrate
+```
+
+#### 6. Seed Database
+```bash
+python3 seeding/seed.py
+python3 manage.py loaddata fixtures/data.json
+```
+
+#### 7. Create django admin panel username
+```bash
+python3 manage.py createsuperuser
+```
+
+#### 8. Run server
+```bash
+python3 manage.py runserver
+```
+
+### Production Deployment
+
+For production deployment, consider the following additional steps:
+
+### Using uWSGI and Nginx
+
+#### 1. configure uwsgi
+
+```bash
+vim /etc/uwsgi/apps-available/yourdomain.com.uwsgi.ini
+```
+
+```ini
+[uwsgi]
+# Basic configuration
+plugins = python3
+master = true
+protocol = uwsgi
+socket = 127.0.0.1:8090
+
+# Application configuration
+chdir = /path/to/policounter
+module = policounter.wsgi:application
+home = /path/to/policounter/venv
+
+# Worker configuration
+workers = 4
+enable-threads = true
+
+# Performance settings
+buffer-size = 8192
+reload-on-rss = 250
+close-on-exec = true
+
+# Permissions
+umask = 0022
+uid = your_user
+gid = your_group
+chmod-socket = 660
+
+# Error handling
+ignore-sigpipe = true
+ignore-write-errors = true
+disable-write-exception = true
+
+# Logging
+logto = /var/log/uwsgi/app/policounter.log
+log-date = true
+
+# Cleanup
+vacuum = true
+die-on-term = true
+```
+
+#### 3. Enable the uWSGI Configuration
+
+```bash
+sudo ln -s /etc/uwsgi/apps-enabled/policounter.indiana50501.org.uwsgi.ini /etc/uwsgi/apps-available/policounter.indiana50501.org.uwsgi.ini
+```
+
+#### 4. Configure Nginx
+
+Create an Nginz server block Configuration
+
+```bash
+sudo vim /etc/nginx/sites-available/policounter
+```
+
+Add the following configuration:
+
+```nginx
+vhost:
+
+server {
+  listen 80;
+  listen [::]:80;
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  {{ssl_certificate_key}}
+  {{ssl_certificate}}
+  server_name policounter.indiana50501.org;
+  {{root}}
+
+  {{nginx_access_log}}
+  {{nginx_error_log}}
+
+  if ($scheme != "https") {
+    rewrite ^ https://$host$uri permanent;
+  }
+
+  location ~ /.well-known {
+    auth_basic off;
+    allow all;
+  }
+
+  {{settings}}
+
+  index index.html;
+
+  location / {
+    include uwsgi_params;
+    uwsgi_read_timeout 3600;
+    #uwsgi_pass unix:///run/uwsgi/app/weblate/socket;
+    uwsgi_pass 127.0.0.1:{{app_port}};
+  }
+
+  location /static/ {
+    alias /home/indiana50501-policounter/htdocs/policounter.indiana50501.org/static/;
+  }
+
+  location /media/ {
+    alias /home/indiana50501-policounter/htdocs/policounter.indiana50501.org/media/;
+  }
+
+
+  #location ~* ^.+\.(css|js|jpg|jpeg|gif|png|ico|gz|svg|svgz|ttf|otf|woff|woff2|eot|mp4|ogg|ogv|webm|webp|zip|swf)$ {
+  #  add_header Access-Control-Allow-Origin "*";
+  #  expires max;
+  #  access_log on;
+  #}
+
+  if (-f $request_filename) {
+    break;
+  }
+}
+```
+
+#### 5. Enable the Nginx Configuration
+
+```bash
+sudo ln -s /etc/nginx/sites-available/policounter /etc/nginx/sites-enabled/
+```
+
+
+#### 6. Create Static and Media Directories
+
+```bash
+python3 manage.py collectstatic
+mkdir -p media
+chmod 755 static media
+```
+
+#### 7. Set proper permissions
+
+```bash
+sudo chown -R your_user:your_group /path/to/policounter
+```
+
+#### 8. Restart services
+
+```bash
+sudo systemctl restart uwsgi
+sudo systemctl restart nginx
+```
+
+### Regular Maintenance
+
+Back up the database regularly
+Update the application and dependencies
+Monitor server logs for errors
+
+### Troubleshooting
+If you encounter issues during deployment, check:
+
+Application logs: /var/log/uwsgi/app/policounter.log
+Nginx error logs: /var/log/nginx/policounter_error.log
+PostgreSQL logs
+System resource usage
+
+For specific error troubleshooting, refer to the project documentation or open an issue on GitHub.
