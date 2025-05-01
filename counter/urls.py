@@ -15,6 +15,4 @@ urlpatterns = [
     path('events/<int:event_id>/add-observation/', views.add_observation, name='add_observation'),
     path('events/<int:event_id>/estimate/', views.estimate, name='estimate_crowd'),
     # Location views
-    path('locations/', views.location_list, name='location_list'),
-    path('locations/<int:location_id>/', views.location_events, name='location_events'),
 ]

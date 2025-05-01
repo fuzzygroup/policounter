@@ -8,7 +8,9 @@
         <table class="table table-striped table-bordered">
             <thead class="thead-dark">
                 <tr>
-                <th>Event</th>
+                    <th>Event</th>
+                    <th>Location</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -16,16 +18,31 @@
                 <tr onclick="window.location.href='{% url 'counts:event_detail' event.id %}'" style="cursor: pointer">
                     <td>{{ event.name }}</td>
                     <td>{{ event.location }}</td>
-                    <td>{{ event.date}}</td>
+                    <td>{{ event.date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
     </div>
-</div>
-<div class="d-flex justify-content-between mt-4 mb-3">
-    <a href="{% url 'counts:add_event' %}" class="btn btn-primary">➕ Add Event</a>
-</div>
 
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-between mt-4">
+        <div>
+            {% if events.has_previous %}
+                <a href="?page=1" class="btn btn-secondary">First</a>
+                <a href="?page={{ events.previous_page_number }}" class="btn btn-secondary">Previous</a>
+            {% endif %}
+
+            <span>Page {{ events.number }} of {{ events.paginator.num_pages }}</span>
+
+            {% if events.has_next %}
+                <a href="?page={{ events.next_page_number }}" class="btn btn-secondary">Next</a>
+                <a href="?page={{ events.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'counts:add_event' %}" class="btn btn-primary">➕ Add Event</a>
+    </div>
+
+</div>
 {% endblock %}

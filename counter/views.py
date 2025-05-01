@@ -6,15 +6,13 @@ logger = logging.getLogger(__name__)
 import os
 import uuid
 from io import BytesIO
-
 from PIL import Image
+
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
-from django.core.serializers import serialize
-from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
-from django.views.generic import DetailView
+from django.core.paginator import Paginator
 
 from policounter import settings
 from lwcc import LWCC
@@ -27,41 +25,29 @@ def index(request):
     context = None
     return render(request, "counts/index.html", context)
 
-
 def event_list(request):
-    """View to display all events, sorted by most recent date first"""
-    events = Event.objects.all().order_by('-date')
+    event_list = Event.objects.all().order_by('-date')  # Get all events (you can filter them as needed)
+    paginator = Paginator(event_list, 10)  # Show 10 events per page
+    page_number = request.GET.get('page')  # Get the current page from the URL
+    events = paginator.get_page(page_number)  # Get the events for the current page
     return render(request, 'counts/event_list.html', {'events': events})
 
 def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
-    observations = event.observations.order_by('-timestamp')  # ascending
+    observations = event.observations.order_by('-timestamp')  # Get all observations, ordered by timestamp
+    paginator = Paginator(observations, 10)  # Paginate observations (10 per page)
+    page_number = request.GET.get('page')  # Get the current page from the URL
+    observations_page = paginator.get_page(page_number)  # Get the observations for the current page
+
     return render(request, 'counts/event_detail.html', {
         'event': event,
-        'observations': observations,
+        'observations': observations_page,  # Pass the paginated observations
     })
 
 def observation_detail(request, pk):
     """View to display details of a specific observation, including prediction if available"""
     observation = get_object_or_404(Observation, pk=pk)
     return render(request, 'counts/observation_detail.html', {'observation': observation})
-
-
-def location_list(request):
-    """View to display all locations"""
-    locations = Location.objects.all().order_by('country', 'state', 'city')
-    return render(request, 'counts/location_list.html', {'locations': locations})
-
-
-def location_events(request, location_id):
-    """View to display events at a specific location"""
-    location = get_object_or_404(Location, pk=location_id)
-    events = location.events.all().order_by('-date')
-    return render(request, 'counts/location_events.html', {
-        'location': location,
-        'events': events
-    })
-
 
 def add_event(request):
     if request.method == 'POST':
