@@ -35,7 +35,7 @@ Before deploying Policounter, ensure you have the following prerequisites instal
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/policounter.git
+git clone https://github.com/fuzzygroup/policounter.git
 cd policounter
 ```
 
