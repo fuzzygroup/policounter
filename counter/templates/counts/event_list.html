@@ -4,11 +4,11 @@
 <div class="container mt-4">
     <h1>Crowd Count Events</h1>
 
-    <div class="li<div class="table-responsive">
+    <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead class="thead-dark">
                 <tr>
-                    <th>Event</th>
+                <th>Event</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,4 +24,8 @@
 
     </div>
 </div>
+<div class="d-flex justify-content-between mt-4 mb-3">
+    <a href="{% url 'counts:add_event' %}" class="btn btn-primary">➕ Add Event</a>
+</div>
+
 {% endblock %}
