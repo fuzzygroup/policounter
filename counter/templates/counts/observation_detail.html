@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-
 <h1>Observation Detail</h1>
-
 {% if observation.input_image or observation.density_map %}
 <div style="display: flex; gap: 20px; margin-bottom: 20px;">
     {% if observation.input_image %}
@@ -20,39 +18,31 @@
     {% endif %}
 </div>
 {% endif %}
-
 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; max-width: 600px;">
     <div><strong>Event:</strong></div>
     <div>{{ observation.event.name }}</div>
-
     <div><strong>Timestamp:</strong></div>
     <div>{{ observation.timestamp|date:"Y-m-d H:i" }}</div>
-
     <div><strong>Count:</strong></div>
     <div>{{ observation.count }}</div>
-
     <div><strong>Method:</strong></div>
     <div>{{ observation.get_method_display }}</div>
-
     <div><strong>Observer:</strong></div>
     <div>{{ observation.observer|default:"—" }}</div>
-
     {% if observation.model_name %}
     <div><strong>Model Name:</strong></div>
     <div>{{ observation.model_name }}</div>
     {% endif %}
-
     {% if observation.weight_selection %}
     <div><strong>Weight Selection:</strong></div>
     <div>{{ observation.weight_selection }}</div>
     {% endif %}
-
     <div><strong>Created At:</strong></div>
     <div>{{ observation.created_at|date:"Y-m-d H:i" }}</div>
 </div>
 
-<p style="margin-top: 30px;">
-    <a href="{% url 'counts:event_detail' observation.event.id %}">&larr; Back to Event</a>
-</p>
-
+<div style="margin-top: 30px; display: flex; gap: 15px;">
+    <a href="{% url 'counts:event_detail' observation.event.id %}" class="btn btn-secondary">&larr; Back to Event</a>
+    <a href="{% url 'counts:estimate' observation.id %}" class="btn btn-primary">Generate Estimate</a>
+</div>
 {% endblock %}
