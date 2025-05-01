@@ -35,7 +35,7 @@ def event_list(request):
 
 def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
-    observations = event.observations.all()  # thanks to related_name='observations'
+    observations = event.observations.order_by('-timestamp')  # ascending
     return render(request, 'counts/event_detail.html', {
         'event': event,
         'observations': observations,
