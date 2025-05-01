@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Begin estimate on {{ event.name }}</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="{{ form.input_image.id_for_label }}" class="form-label">Image (Optional)</label>
+                    {{ form.input_image }}
+                    {% if form.input_image.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.input_image.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Upload an image of the crowd (optional)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'counts:event_detail' event.id %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">estimate</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

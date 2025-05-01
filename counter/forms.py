@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import Event, Observation
 from django.utils import timezone
 
@@ -47,3 +48,20 @@ class ObservationForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+
+class PredictionForm(forms.ModelForm):
+    event_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label='Event Date'
+    )
+
+    class Meta:
+        model = Observation
+        fields = [
+            'input_image',
+            'event_city',
+            'event_date',
+        ]
+        fields = ['input_image']

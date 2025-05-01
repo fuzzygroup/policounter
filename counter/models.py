@@ -36,7 +36,7 @@ class Observation(models.Model):
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observations')
     count = models.DecimalField(max_digits=10, decimal_places=2)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     method = models.CharField(max_length=20, choices=METHOD_CHOICES)
     observer = models.CharField(max_length=100, blank=True, null=True)
     # New fields moved from Prediction:
