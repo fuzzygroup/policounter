@@ -4,6 +4,12 @@
 
 Policounter is an open source crowd counting software designed to take crowd images from a camera, phone or drone and drive a website of images as well as build a data feed for algorithmic consumption.
 
+## Data model explanation
+
+An *Event* can have a series of *Observations* that include a crowd size *count*
+
+![](https://github.com/fuzzygroup/policounter/blob/main/doc/policounter_datamodel.png)
+
 ## Crowd size estimation using lwcc
 
 Policounter tracks several forms of observation, but also allows an observation to be the result of a machine prediciton.  To achieve this end the [LWCC: A LightWeight Crowd Counting library for Python](https://github.com/tersekmatija/lwcc) was employed.
