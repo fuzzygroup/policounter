@@ -3,6 +3,15 @@ import json
 from datetime import datetime
 from dateutil import parser as dateparser
 import re
+import os
+import django
+import sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ROOT_DIR)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "policounter.settings")  # Replace with your real settings path
+django.setup()
+
+from counter.models import Location
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 CITIES_CSV    = 'seeding/worldcities.csv'
@@ -20,7 +29,12 @@ METHOD_MAP = {
 
 # ─── STATE ────────────────────────────────────────────────────────────────────
 fixtures           = []
-location_lookup    = {}  # (city, state, country) -> pk
+location_lookup = {
+    (loc.city.strip(), loc.state.strip(), loc.country.strip()): loc.pk
+    for loc in Location.objects.all()
+}
+loc_pk = max(location_lookup.values(), default=0) + 1
+
 event_lookup       = {}  # (name, date, loc_pk)    -> pk
 
 loc_pk             = 1
