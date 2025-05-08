@@ -48,7 +48,7 @@ Valid options for *model_weights* are written in the first row and thus include:
 
 Before deploying Policounter, ensure you have the following prerequisites installed:
 
-* Python 3.8+
+* Python 3.12+
 * pip (Python package manager)
 * PostgreSQL database
 * Git

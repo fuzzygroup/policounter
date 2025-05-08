@@ -1,11 +1,13 @@
 import csv
 import json
-from pathlib import Path
 from datetime import datetime
+from dateutil import parser as dateparser
+import re
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 CITIES_CSV    = 'seeding/worldcities.csv'
 EVENTS_CSV    = 'seeding/events.csv'
+SHEET_EVENTS_CSV = 'seeding/sheet_events.csv'  # Yogi events
 FIXTURE_FILE  = 'fixtures/data.json'
 APP_LABEL     = 'counter'   # ← change this to your real app name
 
@@ -27,6 +29,26 @@ obs_pk             = 1
 
 # use one “now” timestamp for all created_at’s so the JSON is consistent
 NOW_ISO = datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+
+
+# ─── Utility ────────────────────────────────────────────────────────────────────
+
+def parse_date_flexibly(raw_date):
+    raw_date = raw_date.strip()
+
+    # Skip recurring patterns like "Tuesdays"
+    if re.search(r'(every|first|second|third|fourth|last|\bmon|\btue|\bwed|\bthu|\bfri|\bsat|\bsun)', raw_date, re.I):
+        raise ValueError(f"Recurring pattern (not a date): {raw_date}")
+
+    # Skip malformed or multi-date strings
+    if not re.search(r'\d{1,2}/\d{1,2}/\d{2,4}', raw_date):
+        raise ValueError(f"Unrecognized or ambiguous date: {raw_date}")
+
+    try:
+        return dateparser.parse(raw_date).date().isoformat()
+    except Exception:
+        raise ValueError(f"Unparsable date: {raw_date}")
+
 
 # ─── 1) LOCATIONS ─────────────────────────────────────────────────────────────
 with open(CITIES_CSV, newline='', encoding='utf-8') as f:
@@ -101,6 +123,53 @@ with open(EVENTS_CSV, newline='', encoding='utf-8') as f:
             }
         })
         obs_pk += 1
+
+# ─── 2A) SHEET-BASED EVENTS (no observation data) ─────────────────────────────
+with open(SHEET_EVENTS_CSV, newline='', encoding='utf-8') as f:
+    for row in csv.DictReader(f):
+        name     = row['Event Name'].strip()
+        city     = row['City'].strip()
+        state    = "Indiana"
+        country  = 'United States'  # default for now; adjust if needed
+        loc_key  = (city, state, country)
+        date = None
+        try:
+            date = parse_date_flexibly(row['Date'])
+        except ValueError as e:
+            print(f"⚠️  Skipping event: {e}")
+            continue
+
+        if loc_key not in location_lookup:
+            fixtures.append({
+                "model": f"{APP_LABEL}.location",
+                "pk": loc_pk,
+                "fields": {
+                    "city":       city,
+                    "state":      state,
+                    "country":    country,
+                    "created_at": NOW_ISO,
+                }
+            })
+            location_lookup[loc_key] = loc_pk
+            print(f'appending {loc_key}')
+            loc_pk += 1
+
+        loc_id = location_lookup[loc_key]
+        ev_key = (name, date, loc_id)
+
+        if ev_key not in event_lookup:
+            fixtures.append({
+                "model": f"{APP_LABEL}.event",
+                "pk": event_pk,
+                "fields": {
+                    "name":       name,
+                    "date":       date,
+                    "location":   loc_id,
+                    "created_at": NOW_ISO,
+                }
+            })
+            event_lookup[ev_key] = event_pk
+            event_pk += 1
 
 
 # ─── 2B) MANUAL EVENT AND OBSERVATIONS ─────────────────────────────────────────
