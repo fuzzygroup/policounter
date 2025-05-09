@@ -61,26 +61,30 @@ def parse_date_flexibly(raw_date):
         raise ValueError(f"Unparsable date: {raw_date}")
 
 
-# ─── Clear the existing data ───────────────────────────────────────────────────
-# Check if we're using MySQL (which has different truncate behavior)
-is_mysql = connection.vendor == 'mysql'
+def get_or_create_fixture(model, unique_key, fields, lookup_dict, pk_counter):
+    """
+    Get or create a fixture record.
+    - model: Django model string
+    - unique_key: hashable key to detect duplicates
+    - fields: dict of field data
+    - lookup_dict: dict mapping unique keys to pk
+    - pk_counter: int reference for generating new PKs
 
-if is_mysql:
-    # For MySQL, we need to disable foreign key checks temporarily
-    with connection.cursor() as cursor:
-        cursor.execute('SET FOREIGN_KEY_CHECKS=0;')
-        cursor.execute('TRUNCATE TABLE counter_observation;')
-        cursor.execute('TRUNCATE TABLE counter_event;')
-        cursor.execute('TRUNCATE TABLE counter_location;')
-        cursor.execute('SET FOREIGN_KEY_CHECKS=1;')
-else:
-    # For PostgreSQL and others
-    with connection.cursor() as cursor:
-        cursor.execute('TRUNCATE TABLE counter_observation CASCADE;')
-        cursor.execute('TRUNCATE TABLE counter_event CASCADE;')
-        cursor.execute('TRUNCATE TABLE counter_location CASCADE;')
+    Returns: (pk, updated pk_counter)
+    """
+    if unique_key in lookup_dict:
+        pk = lookup_dict[unique_key]
+        return pk, pk_counter
+    else:
+        pk = pk_counter
+        fixtures.append({
+            "model": f"{APP_LABEL}.{model}",
+            "pk": pk,
+            "fields": fields
+        })
+        lookup_dict[unique_key] = pk
+        return pk, pk_counter + 1
 
-print("✓ Cleared existing data")
 
 # ─── 1) LOCATIONS ─────────────────────────────────────────────────────────────
 print("Creating locations...")
@@ -133,18 +137,14 @@ for city, state, country in sorted(unique_locations):
 
     location_key = (city, state, country)
     if location_key not in location_keys:
-        fixtures.append({
-            "model": f"{APP_LABEL}.location",
-            "pk": loc_pk,
-            "fields": {
+        fields = {
                 "city": city,
                 "state": state,
                 "country": country,
                 "created_at": NOW_ISO,
             }
-        })
-        location_keys[location_key] = loc_pk
-        loc_pk += 1
+
+        loc_id, loc_pk = get_or_create_fixture("location", location_key, fields, location_keys, loc_pk)
 
 print(f"✓ Created {len(location_keys)} unique locations")
 
@@ -188,18 +188,14 @@ try:
 
             ev_key = (name, date, loc_id)
             if ev_key not in event_lookup:
-                fixtures.append({
-                    "model": f"{APP_LABEL}.event",
-                    "pk": event_pk,
-                    "fields": {
+                fields = {
                         "name": name,
                         "date": date,
                         "location": loc_id,
                         "created_at": NOW_ISO,
-                    }
-                })
-                event_lookup[ev_key] = event_pk
-                event_pk += 1
+                }
+
+                event_id, event_pk = get_or_create_fixture("event", ev_key, fields, event_lookup, event_pk)
 
             ev_id = event_lookup[ev_key]
 
@@ -252,18 +248,14 @@ try:
             ev_key = (name, date, loc_id)
 
             if ev_key not in event_lookup:
-                fixtures.append({
-                    "model": f"{APP_LABEL}.event",
-                    "pk": event_pk,
-                    "fields": {
+                fields = {
                         "name": name,
                         "date": date,
                         "location": loc_id,
                         "created_at": NOW_ISO,
-                    }
-                })
-                event_lookup[ev_key] = event_pk
-                event_pk += 1
+                }
+                event_id, event_pk = get_or_create_fixture("event", ev_key, fields, event_lookup, event_pk)
+
 except FileNotFoundError:
     print(f"Warning: {SHEET_EVENTS_CSV} not found, skipping")
 
