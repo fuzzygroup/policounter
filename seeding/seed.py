@@ -39,6 +39,14 @@ NOW_ISO = datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
 
 # ─── Utility ────────────────────────────────────────────────────────────────────
 
+def normalize_location(city, state, country):
+    return (
+        city.strip().lower() if city else '',
+        state.strip().lower() if state else '',
+        country.strip().lower() if country else '',
+    )
+
+
 def parse_date_flexibly(raw_date):
     """Parse a date string flexibly, returning ISO format or raising ValueError"""
     raw_date = raw_date.strip()
@@ -125,19 +133,23 @@ try:
 except FileNotFoundError:
     print(f"Warning: {CITIES_CSV} not found, skipping")
 
-# Create fixtures
-for city, state, country in sorted(unique_locations):
-    if not city or not country:
-        continue
+normalized_location_keys = set()
 
-    location_key = (city, state, country)
+for city, state, country in sorted(unique_locations):
+    norm_key = normalize_location(city, state, country)
+    if norm_key in normalized_location_keys:
+        print(f"Duplicate location skipped: {norm_key}")
+        continue
+    normalized_location_keys.add(norm_key)
+
     fields = {
-        "city": city,
-        "state": state,
-        "country": country,
+        "city": city.strip(),
+        "state": state.strip(),
+        "country": country.strip(),
         "created_at": NOW_ISO,
     }
-    loc_pk_id, loc_pk = get_or_create_fixture("location", location_key, fields, location_keys, loc_pk)
+    loc_pk_id, loc_pk = get_or_create_fixture("location", norm_key, fields, location_keys, loc_pk)
+
 
 print(f"✓ Created {len(location_keys)} unique locations")
 
