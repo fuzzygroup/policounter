@@ -59,7 +59,7 @@ def add_event(request):
             event = form.save(commit=False)
             event.location = location
             event.save()
-            return redirect('counts:event_list')
+            return redirect('counts:event_detail', pk=event.pk)
     else:
         form = EventForm()
 
