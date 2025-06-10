@@ -23,5 +23,6 @@ from django.conf import settings
 urlpatterns = [
     path("counter/", include("counter.urls")),
     path("admin/", admin.site.urls),
-    path("", include("counter.urls"))
+    path("", include("counter.urls")),
+    path('', include('pollyvent.urls')),  # <-- This is essential!
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
