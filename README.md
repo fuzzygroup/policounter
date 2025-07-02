@@ -41,246 +41,210 @@ Valid options for *model_weights* are written in the first row and thus include:
 - django
     - psycopg[binary]
 
+# Policounter Django Deployment Guide (Ubuntu + Gunicorn + Nginx)
 
-## Policounter Deployment Instructions
+---
 
-### Prerequisites
+## Overview
 
-Before deploying Policounter, ensure you have the following prerequisites installed:
+This document outlines the production deployment process for the `policounter` Django project, covering initial setup, PostgreSQL, Gunicorn, Nginx, and environment configuration. It also includes a postmortem and cleanup plan for `requirements.txt`.
 
-* Python 3.12+
-* pip (Python package manager)
-* PostgreSQL database
-* Git
-* uWSGI and uWSGI Python3 plugin
-* Nginx
+---
 
-### Installation Steps
+## 1. Provision Server
 
-#### 1. Clone the Repository
+* OS: Ubuntu 22.04+
+* Create a deploy user:
+
+  ```bash
+  adduser deploy
+  usermod -aG sudo deploy
+  ```
+* Install dependencies:
+
+  ```bash
+  sudo apt update && sudo apt upgrade
+  sudo apt install python3-venv python3-pip nginx postgresql postgresql-contrib
+  ```
+
+---
+
+## 2. Clone Project & Setup Virtual Environment
 
 ```bash
-git clone https://github.com/fuzzygroup/policounter.git
+cd ~
+git clone https://your-repo-url ~/policounter
 cd policounter
-```
-
-#### 2. Setup a virtual environment
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-#### 3. Install Dependencies
-
-```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
-pip install psycopg[binary]
-pip install django-bootstrap5
 ```
 
-#### 4. Configure Database
-```bash
-createdb pcdb --owner=pcdbu;
+---
 
-# Configure database settings in settings.py or .env file
-# Example .env configuration:
-# DB_NAME=pcdb
-# DB_USER=pcdbu
-# DB_PASSWORD=your_password
-# DB_HOST=localhost
-# DB_PORT=5432
+## 3. Configure Environment Variables (No `export`, no quotes)
+
+Create `.env` at the project root:
+
+```
+SECRET_KEY=your-new-secret-key
+DB_NAME=pcdb
+DB_USER=pcdbu
+DB_PASSWORD=your-password
 ```
 
-#### 5. Create and run migrations
-```bash
-python3 manage.py makemigrations    #in my env python3 is linked to the virtual env interpreter
-python3 manage.py migrate
-```
-
-#### 6. Seed Database
-```bash
-python3 seeding/seed.py
-python3 manage.py loaddata fixtures/data.json
-```
-
-#### 7. Create django admin panel username
-```bash
-python3 manage.py createsuperuser
-```
-
-#### 8. Run server
-```bash
-python3 manage.py runserver
-```
-
-### Production Deployment
-
-For production deployment, consider the following additional steps:
-
-### Using uWSGI and Nginx
-
-#### 1. configure uwsgi
+Permissions:
 
 ```bash
-vim /etc/uwsgi/apps-available/yourdomain.com.uwsgi.ini
+chmod 640 .env
+chown deploy:www-data .env
 ```
+
+---
+
+## 4. PostgreSQL Setup
+
+```bash
+sudo -u postgres psql
+```
+
+```sql
+CREATE DATABASE pcdb;
+CREATE USER pcdbu WITH PASSWORD 'your-password';
+ALTER ROLE pcdbu SET client_encoding TO 'utf8';
+ALTER ROLE pcdbu SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE pcdb TO pcdbu;
+```
+
+Ensure:
+
+```sql
+GRANT ALL ON SCHEMA public TO pcdbu;
+```
+
+---
+
+## 5. Update `settings.py`
+
+```python
+import os
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = False
+ALLOWED_HOSTS = ['your.server.ip', 'localhost', 'your.domain.com']
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+    }
+}
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+```
+
+---
+
+## 6. Migrations and Collectstatic
+
+```bash
+source venv/bin/activate
+python manage.py migrate
+python manage.py collectstatic
+```
+
+---
+
+## 7. Gunicorn Systemd Service
+
+File: `/etc/systemd/system/policounter.service`
 
 ```ini
-[uwsgi]
-# Basic configuration
-plugins = python3
-master = true
-protocol = uwsgi
-socket = 127.0.0.1:8090
+[Unit]
+Description=Gunicorn daemon for policounter Django project
+After=network.target
 
-# Application configuration
-chdir = /path/to/policounter
-module = policounter.wsgi:application
-home = /path/to/policounter/venv
+[Service]
+User=deploy
+Group=www-data
+WorkingDirectory=/home/deploy/policounter
+EnvironmentFile=/home/deploy/policounter/.env
+ExecStart=/home/deploy/policounter/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/home/deploy/policounter/policounter.sock \
+          policounter.wsgi:application
 
-# Worker configuration
-workers = 4
-enable-threads = true
-
-# Performance settings
-buffer-size = 8192
-reload-on-rss = 250
-close-on-exec = true
-
-# Permissions
-umask = 0022
-uid = your_user
-gid = your_group
-chmod-socket = 660
-
-# Error handling
-ignore-sigpipe = true
-ignore-write-errors = true
-disable-write-exception = true
-
-# Logging
-logto = /var/log/uwsgi/app/policounter.log
-log-date = true
-
-# Cleanup
-vacuum = true
-die-on-term = true
+[Install]
+WantedBy=multi-user.target
 ```
 
-#### 3. Enable the uWSGI Configuration
+Enable and start:
 
 ```bash
-sudo ln -s /etc/uwsgi/apps-enabled/policounter.indiana50501.org.uwsgi.ini /etc/uwsgi/apps-available/policounter.indiana50501.org.uwsgi.ini
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable policounter
+sudo systemctl start policounter
 ```
 
-#### 4. Configure Nginx
+---
 
-Create an Nginz server block Configuration
+## 8. NGINX Configuration
 
-```bash
-sudo vim /etc/nginx/sites-available/policounter
-```
-
-Add the following configuration:
+File: `/etc/nginx/sites-available/policounter`
 
 ```nginx
-vhost:
-
 server {
-  listen 80;
-  listen [::]:80;
-  listen 443 ssl http2;
-  listen [::]:443 ssl http2;
-  {{ssl_certificate_key}}
-  {{ssl_certificate}}
-  server_name policounter.indiana50501.org;
-  {{root}}
+    listen 80;
+    server_name your.domain.com your.server.ip;
 
-  {{nginx_access_log}}
-  {{nginx_error_log}}
+    location = /favicon.ico { access_log off; log_not_found off; }
 
-  if ($scheme != "https") {
-    rewrite ^ https://$host$uri permanent;
-  }
+    location /static/ {
+        alias /home/deploy/policounter/staticfiles/;
+    }
 
-  location ~ /.well-known {
-    auth_basic off;
-    allow all;
-  }
-
-  {{settings}}
-
-  index index.html;
-
-  location / {
-    include uwsgi_params;
-    uwsgi_read_timeout 3600;
-    #uwsgi_pass unix:///run/uwsgi/app/weblate/socket;
-    uwsgi_pass 127.0.0.1:{{app_port}};
-  }
-
-  location /static/ {
-    alias /home/indiana50501-policounter/htdocs/policounter.indiana50501.org/static/;
-  }
-
-  location /media/ {
-    alias /home/indiana50501-policounter/htdocs/policounter.indiana50501.org/media/;
-  }
-
-
-  #location ~* ^.+\.(css|js|jpg|jpeg|gif|png|ico|gz|svg|svgz|ttf|otf|woff|woff2|eot|mp4|ogg|ogv|webm|webp|zip|swf)$ {
-  #  add_header Access-Control-Allow-Origin "*";
-  #  expires max;
-  #  access_log on;
-  #}
-
-  if (-f $request_filename) {
-    break;
-  }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/deploy/policounter/policounter.sock;
+    }
 }
 ```
 
-#### 5. Enable the Nginx Configuration
+Enable site:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/policounter /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/policounter /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
+---
 
-#### 6. Create Static and Media Directories
+## 9. Firewall and HTTPS
 
 ```bash
-python3 manage.py collectstatic
-mkdir -p media
-chmod 755 static media
+sudo ufw allow 'Nginx Full'
 ```
 
-#### 7. Set proper permissions
+(Optional HTTPS):
 
 ```bash
-sudo chown -R your_user:your_group /path/to/policounter
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your.domain.com
 ```
 
-#### 8. Restart services
+---
 
-```bash
-sudo systemctl restart uwsgi
-sudo systemctl restart nginx
-```
+## ✅ Deployment Complete
 
-### Regular Maintenance
+Visit: `http://your.server.ip/` or `http://your.domain.com/` to verify.
 
-Back up the database regularly
-Update the application and dependencies
-Monitor server logs for errors
+You now have a working, minimal, stable Django production deploy. 🎉
 
-### Troubleshooting
-If you encounter issues during deployment, check:
-
-Application logs: /var/log/uwsgi/app/policounter.log
-Nginx error logs: /var/log/nginx/policounter_error.log
-PostgreSQL logs
-System resource usage
-
-For specific error troubleshooting, refer to the project documentation or open an issue on GitHub.
