@@ -1,14 +1,9 @@
 # pollyvent/views.py
 import os
-from django.http import HttpResponse
-from pollyvent.yvent.generator import generate_flyer
-from tempfile import NamedTemporaryFile
+import uuid
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-
-BASE_DIR = settings.BASE_DIR
-
-logo_path = os.path.join(BASE_DIR, "pollyvent", "yvent", "assets", "flierlogo.png")
-font_path = os.path.join(BASE_DIR, "pollyvent", "yvent", "assets", "DejaVuSans.ttf")
+from pollyvent.yvent.generator import generate_flyer
 
 def generate_flyer_view(request):
     title = request.GET.get("title")
@@ -18,20 +13,35 @@ def generate_flyer_view(request):
     if not all([title, dt_str, location]):
         return HttpResponse("Missing required parameters", status=400)
 
-    # Use static asset paths
-    logo_path = "assets/flierlogo.png"
-    font_path = "assets/DejaVuSans.ttf"
+    # Create output directory inside MEDIA_ROOT
+    output_dir = os.path.join(settings.MEDIA_ROOT, "flyers")
+    os.makedirs(output_dir, exist_ok=True)
 
-    with NamedTemporaryFile(suffix=".png") as tmp:
-        generate_flyer(
-            title=title,
-            dt_str=dt_str,
-            location=location,
-            qr_text="scan this",  # or also from GET param
-            logo_path=logo_path,
-            font_path=font_path,
-            output_path=tmp.name
-        )
+    # Generate unique filename
+    filename = f"{uuid.uuid4().hex}.png"
+    output_path = os.path.join(output_dir, filename)
 
-        with open(tmp.name, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/png")
+    # Static asset paths (absolute)
+    logo_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "flierlogo.png")
+    font_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "DejaVuSans.ttf")
+
+    # Generate the flyer image
+    generate_flyer(
+        title=title,
+        dt_str=dt_str,
+        location=location,
+        qr_text="scan this",  # Could be dynamic if needed
+        logo_path=logo_path,
+        font_path=font_path,
+        output_path=output_path,
+    )
+
+    # Build absolute URL to saved image
+    relative_url = f"/media/flyers/{filename}"
+    full_url = request.build_absolute_uri(relative_url)
+
+    return JsonResponse({
+        "status": "ok",
+        "flyer_url": full_url
+    })
+
