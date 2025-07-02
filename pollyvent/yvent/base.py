@@ -87,18 +87,30 @@ class ImageComposer:
     def add_text(self, text, x, y, font=None, font_size=48, color='black', rotate=0, anchor="lt"):
         font = font or ImageFont.truetype("DejaVuSans.ttf", font_size)
 
+        # Initial bounding box of the text
         bbox = self.draw.textbbox((0, 0), text, font=font, anchor=anchor)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
 
-        # Create transparent image
-        text_img = Image.new("RGBA", (w, h), (255, 255, 255, 0))
-        draw = ImageDraw.Draw(text_img)
-        draw.text((w // 2, h // 2) if anchor == "mm" else (0, 0), text, font=font, fill=color, anchor=anchor)
+        # Add padding for descenders & rotation
+        padding = int(max(w, h) * 0.25)
+        padded_w = w + 2 * padding
+        padded_h = h + 2 * padding
 
+        # Create transparent image with padding
+        text_img = Image.new("RGBA", (padded_w, padded_h), (255, 255, 255, 0))
+        draw = ImageDraw.Draw(text_img)
+
+        # Draw the text centered within the padded image
+        draw_x = padded_w // 2 if anchor == "mm" else padding
+        draw_y = padded_h // 2 if anchor == "mm" else padding
+        draw.text((draw_x, draw_y), text, font=font, fill=color, anchor=anchor)
+
+        # Rotate with expansion
         if rotate:
             text_img = text_img.rotate(rotate, expand=True)
 
+        # Paste to canvas, center-aligned if "mm", else top-left
         paste_x = x - (text_img.width // 2 if anchor == "mm" else 0)
         paste_y = y - (text_img.height // 2 if anchor == "mm" else 0)
 

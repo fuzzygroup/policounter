@@ -42,7 +42,10 @@ def generate_flyer(title, dt_str, location, qr_text, logo_path, font_path, outpu
 
     center_x = composer.width // 2
     center_y = composer.height // 2
+
     composer.add_text(data["title"], x=center_x, y=center_y, font=title_font, rotate=45, anchor="mm")
+    
+
 
     qr_box_size = 400
     qr_visual_padding = 60
