@@ -93,7 +93,8 @@ class ImageComposer:
         h = bbox[3] - bbox[1]
 
         # Add padding for descenders & rotation
-        padding = int(max(w, h) * 0.25)
+        padding = int(max(w, h) * 0.25) if rotate else 0
+
         padded_w = w + 2 * padding
         padded_h = h + 2 * padding
 
