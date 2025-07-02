@@ -89,8 +89,8 @@ Create `.env` at the project root:
 
 ```
 SECRET_KEY=your-new-secret-key
-DB_NAME=pcdb
-DB_USER=pcdbu
+DB_NAME=<dbname>
+DB_USER=<dbuser>
 DB_PASSWORD=your-password
 ```
 
@@ -110,17 +110,17 @@ sudo -u postgres psql
 ```
 
 ```sql
-CREATE DATABASE pcdb;
-CREATE USER pcdbu WITH PASSWORD 'your-password';
-ALTER ROLE pcdbu SET client_encoding TO 'utf8';
-ALTER ROLE pcdbu SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE pcdb TO pcdbu;
+CREATE DATABASE <dbname>;
+CREATE USER <dbuser> WITH PASSWORD 'your-password';
+ALTER ROLE <dbuser> SET client_encoding TO 'utf8';
+ALTER ROLE <dbuser> SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE <dbname> TO <dbuser>;
 ```
 
 Ensure:
 
 ```sql
-GRANT ALL ON SCHEMA public TO pcdbu;
+GRANT ALL ON SCHEMA public TO <dbuser>;
 ```
 
 ---
@@ -227,7 +227,7 @@ sudo systemctl reload nginx
 
 ---
 
-## 9. Firewall and HTTPS
+## 9. Firewall and HTTPS`
 
 ```bash
 sudo ufw allow 'Nginx Full'
@@ -245,6 +245,3 @@ sudo certbot --nginx -d your.domain.com
 ## ✅ Deployment Complete
 
 Visit: `http://your.server.ip/` or `http://your.domain.com/` to verify.
-
-You now have a working, minimal, stable Django production deploy. 🎉
-
