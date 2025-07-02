@@ -9,8 +9,9 @@ def generate_flyer_view(request):
     title = request.GET.get("title")
     dt_str = request.GET.get("datetime")
     location = request.GET.get("location")
+    url = request.GET.get("url")
 
-    if not all([title, dt_str, location]):
+    if not all([title, dt_str, location, url]):
         return HttpResponse("Missing required parameters", status=400)
 
     # Create output directory inside MEDIA_ROOT
@@ -30,7 +31,7 @@ def generate_flyer_view(request):
         title=title,
         dt_str=dt_str,
         location=location,
-        qr_text="scan this",  # Could be dynamic if needed
+        qr_text=url,  # Could be dynamic if needed
         logo_path=logo_path,
         font_path=font_path,
         output_path=output_path,
