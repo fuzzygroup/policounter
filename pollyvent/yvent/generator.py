@@ -30,6 +30,7 @@ def generate_flyer(title, dt_str, location, qr_text, logo_path, font_path, outpu
         logo_path=logo_path,
         font_path=font_path,
         output_path=output_path,
+        layout_name=layout_name
     )
     # Set up the canvas
     gradient = gradient or ("white", "blue", "vertical")

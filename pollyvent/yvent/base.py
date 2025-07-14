@@ -10,7 +10,7 @@ DEFAULT_HEIGHT = 2048
 DEFAULT_MARGIN = 60
 
 
-def parse_event_data(title: str, dt_str: str, location: str, qr_text: str, logo_path: Path, font_path: Path, output_path: Path):
+def parse_event_data(title: str, dt_str: str, location: str, qr_text: str, logo_path: Path, font_path: Path, output_path: Path, layout_name: str):
     event_datetime = datetime.fromisoformat(dt_str)
     logo_path = Path(logo_path).resolve()
     font_path = Path(font_path).resolve()
@@ -24,6 +24,7 @@ def parse_event_data(title: str, dt_str: str, location: str, qr_text: str, logo_
         "logo_path": logo_path,
         "font_path": font_path,
         "output_path": output_path,
+        "layout_name": layout_name
     }
 
 

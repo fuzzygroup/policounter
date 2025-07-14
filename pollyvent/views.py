@@ -41,8 +41,9 @@ def generate_flyer_view(request):
         logo_path=logo_path,
         font_path=font_path,
         output_path=output_path,
-        gradient=tuple(gradient) if gradient else None
-    )
+        gradient=tuple(gradient) if gradient else None,
+        layout_name=layout_name
+        )
 
 
     relative_url = f"/media/flyers/{filename}"
