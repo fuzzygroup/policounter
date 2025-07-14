@@ -27,7 +27,7 @@ def generate_flyer_view(request):
     output_path = os.path.join(output_dir, filename)
 
     logo_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "flierlogo.png")
-    font_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "DejaVuSans.ttf")
+    font_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "Ultra-Regular.ttf")
 
     # Generate the flyer image
     generate_flyer(
