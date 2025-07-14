@@ -65,6 +65,28 @@ class ImageComposer:
             overlay.thumbnail((scale_to, scale_to))
         self.canvas.paste(overlay, (x, y), overlay)
 
+    def draw_border(self, radius=40, stroke=5, color="black", inset=0):
+        """
+        Draw a rounded rectangle inside the canvas margins as a visual frame.
+
+        Parameters:
+            radius (int): Corner radius for the rounded rectangle
+            stroke (int): Stroke width
+            color (str or tuple): Outline color
+            inset (int): Extra inset in pixels inside the existing margin
+        """
+        x0 = self.margin + inset
+        y0 = self.margin + inset
+        x1 = self.width - self.margin - inset
+        y1 = self.height - self.margin - inset
+
+        self.draw.rounded_rectangle(
+            [x0, y0, x1, y1],
+            radius=radius,
+            outline=color,
+            width=stroke
+        )
+
     def find_fitting_font(self, text, font_path, max_width, max_height, starting_size=140, angle=45):
         size = starting_size
         while size > 10:

@@ -3,7 +3,7 @@
   "datetime": "2025-08-01T15:00",
   "location": "Garfield Park, Indianapolis",
   "url": "https://example.com/signup",
-  "layout": "centered",
+  "layout": "minimal",
   "gradient": ["#FFFFFF", "#FFFFFF", "vertical"]
 }
 
