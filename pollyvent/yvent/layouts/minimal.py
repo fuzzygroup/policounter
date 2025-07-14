@@ -54,7 +54,7 @@ class MinimalLayout(Layout):
         )
 
         # 3. QR Code in bottom right
-        qr_padding = 60
+        qr_padding = 100
         qr_margin = margin + qr_padding
         qr_box_size = 400
         qr_x = width - qr_box_size - qr_margin
