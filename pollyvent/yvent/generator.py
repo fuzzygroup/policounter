@@ -1,6 +1,7 @@
 import textwrap
 from .base import ImageComposer, parse_event_data
 from .layouts.centered import CenteredLayout
+from .layouts import get_layout
 from PIL import ImageFont
 
 def generate_flyer_from_args(args):
@@ -20,7 +21,7 @@ def generate_flyer_from_args(args):
     )
 
 
-def generate_flyer(title, dt_str, location, qr_text, logo_path, font_path, output_path, gradient=None):
+def generate_flyer(title, dt_str, location, qr_text, logo_path, font_path, output_path, gradient=None, layout_name="diagonal"):
     data = parse_event_data(
         title=title,
         dt_str=dt_str,
@@ -30,13 +31,12 @@ def generate_flyer(title, dt_str, location, qr_text, logo_path, font_path, outpu
         font_path=font_path,
         output_path=output_path,
     )
-
     # Set up the canvas
     gradient = gradient or ("white", "blue", "vertical")
     composer = ImageComposer(gradient=gradient)
 
     # Use the layout system
-    layout = CenteredLayout()
+    layout = get_layout(layout_name);
     layout.render(composer, data)
 
     # Save the final image
