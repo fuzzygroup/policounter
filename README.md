@@ -12,13 +12,13 @@ Now, it's evolving into a one-stop-shop for image handling in the **polly-verse*
 
 ### 🧍‍♂️ `policounter`
 Estimates crowd sizes in protest images using [LWCC](https://github.com/tersekmatija/lwcc), a deep-learning-based crowd estimation framework.  
-See [`policounter/README.md`](./policounter/README.md) for setup and usage.
+See [policounter](./policounter/README.md) for data structure and LWCC info.
 
 ---
 
 ### 🎨 `pollyvent`
 Generates printable and shareable event flyers, complete with gradient backgrounds, logos, QR codes, and dynamically scaled text.  
-See [`pollyvent/README.md`](./pollyvent/README.md) for full details and API examples.
+See [pollyvent](./pollyvent/README.md) for full details and API examples.
 
 ---
 

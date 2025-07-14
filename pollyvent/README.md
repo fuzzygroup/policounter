@@ -49,6 +49,8 @@ Each block is responsible for rendering its portion of the image to the shared `
 
 ## ✨ Example Usage
 
+### Programming interface
+
 ``` bash
 from pollyvent.yvent.layouts.diagonal import DiagonalLayout
 from pollyvent.yvent.generator import ImageComposer
@@ -59,9 +61,39 @@ layout.render(composer, event_data)
 composer.save_to("flyer.png")
 ```
  
----
+### API Endpoint: Generate Flyer via GET Request
 
-## 🚀 CLI Usage
+## API Endpoint: Generate Flyer via GET Request
+
+You can generate a flyer remotely by sending a GET request to the flyer generation endpoint.
+
+**Endpoint:**  
+`https://images.indiana50501.org/generate-flyer/`
+
+**Required query parameters:**
+
+- `title`: Title of the event (URL-encoded)
+- `datetime`: ISO8601 format datetime (e.g. `2025-07-14T18:00`)
+- `location`: Location string (URL-encoded)
+- `url`: URL to be encoded as a QR code (URL-encoded)
+
+***Example request***
+
+```
+https://images.indiana50501.org/generate-flyer/?title=Community+Safety+Training&datetime=2025-07-14T18%3A00&location=Garfield+Park%2C+Indianapolis&url=https%3A%2F%2Fexample.com%2Fevent-signup
+```
+
+
+***Example JSON response:***
+```json
+{
+  "status": "ok",
+  "flyer_url": "https://images.indiana50501.org/media/flyers/824a801441a941d69d3db1d422064800.png"
+}
+``` 
+You can use the `flyer_url` to download or embed the generated flyer image.
+
+### CLI Usage
 Coming soon: A CLI interface to generate flyers from event JSON or YAML data.
 
 ## 📎 Related Files
