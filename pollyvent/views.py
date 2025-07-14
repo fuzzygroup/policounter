@@ -1,45 +1,49 @@
 # pollyvent/views.py
-import os
+
 import uuid
-from django.http import JsonResponse, HttpResponse
+import os
 from django.conf import settings
-from pollyvent.yvent.generator import generate_flyer
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponseBadRequest
+import json
 
-
+@csrf_exempt
 def generate_flyer_view(request):
-    title = request.GET.get("title")
-    dt_str = request.GET.get("datetime")
-    location = request.GET.get("location")
-    url = request.GET.get("url")
+    if request.method != "POST":
+        return HttpResponseBadRequest("Only POST supported")
 
-    # Optional gradient colors
-    from_color = request.GET.get("from_color", "#0000FF")  # blue
-    to_color = request.GET.get("to_color", "#FFFFFF")      # white
-    gradient = (from_color, to_color) if from_color and to_color else None
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON body")
 
-    if not all([title, dt_str, location, url]):
-        return HttpResponse("Missing required parameters", status=400)
+    required = ["title", "datetime", "location", "url"]
+    if not all(key in body for key in required):
+        return HttpResponseBadRequest(f"Missing one of: {', '.join(required)}")
 
-    output_dir = os.path.join(settings.MEDIA_ROOT, "flyers")
-    os.makedirs(output_dir, exist_ok=True)
-
-    filename = f"{uuid.uuid4().hex}.png"
-    output_path = os.path.join(output_dir, filename)
+    # Optional params
+    gradient = body.get("gradient")  # optional tuple like ["white", "blue", "vertical"]
+    layout_name = body.get("layout", "diagonal")
 
     logo_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "flierlogo.png")
     font_path = os.path.join(settings.BASE_DIR, "pollyvent", "yvent", "assets", "Ultra-Regular.ttf")
 
-    # Generate the flyer image
+    from pollyvent.yvent.generator import generate_flyer
+
+    filename = f"{uuid.uuid4().hex}.png"
+    output_path = os.path.join(settings.MEDIA_ROOT, "flyers", filename)
+
     generate_flyer(
-        title=title,
-        dt_str=dt_str,
-        location=location,
-        qr_text=url,
+        title=body["title"],
+        dt_str=body["datetime"],
+        location=body["location"],
+        qr_text=body["url"],
         logo_path=logo_path,
         font_path=font_path,
         output_path=output_path,
-        gradient=gradient
+        gradient=tuple(gradient) if gradient else None
     )
+
 
     relative_url = f"/media/flyers/{filename}"
     full_url = request.build_absolute_uri(relative_url)
