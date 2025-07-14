@@ -63,8 +63,6 @@ composer.save_to("flyer.png")
  
 ### API Endpoint: Generate Flyer via GET Request
 
-## API Endpoint: Generate Flyer via GET Request
-
 You can generate a flyer remotely by sending a GET request to the flyer generation endpoint.
 
 **Endpoint:**  
