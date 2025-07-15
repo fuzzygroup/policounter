@@ -11,13 +11,25 @@ import json
 @csrf_exempt
 def generate_flyer_view(request):
     if request.method != "POST":
+        honeybadger.notify("Received non-POST request to generate-flyer", context={
+            "method": request.method,
+            "path": request.path,
+            "remote_ip": request.META.get("REMOTE_ADDR"),
+            "user_agent": request.META.get("HTTP_USER_AGENT")
+        })
         return HttpResponseBadRequest("Only POST supported")
 
     try:
         body = json.loads(request.body)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        honeybadger.notify("Invalid JSON in flyer POST", context={
+            "body": request.body.decode('utf-8', errors='replace'),
+            "remote_ip": request.META.get("REMOTE_ADDR"),
+            "user_agent": request.META.get("HTTP_USER_AGENT"),
+            "error": str(e)
+        })
         return HttpResponseBadRequest("Invalid JSON body")
-
+    
     required = ["title", "datetime", "location", "url"]
     missing = [key for key in required if key not in body]
     if missing:
