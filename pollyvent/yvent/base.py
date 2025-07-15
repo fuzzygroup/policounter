@@ -103,7 +103,7 @@ class ImageComposer:
 
             if rotated_w <= max_width and rotated_h <= max_height:
                 return font
-            size -= 4  # shrink step
+            size *= .8  # shrink step
         return ImageFont.truetype(font_path, 10)  # fallback
 
 
@@ -166,9 +166,23 @@ class ImageComposer:
         qr.make(fit=True)
 
         img = qr.make_image(fill_color="black", back_color="white").convert("RGBA")
+
+        # Make the white pixels fully transparent BEFORE pasting
+        datas = img.getdata()
+        transparent_data = []
+
+        for item in datas:
+            if item[:3] == (255, 255, 255):  # white
+                transparent_data.append((255, 255, 255, 0))  # transparent
+            else:
+                transparent_data.append(item)
+
+        img.putdata(transparent_data)
+
+        # Now paste the modified image
         self.canvas.paste(img, (x, y), img)
+
         return img.width
-
-
+    
     def save_to(self, path):
         self.canvas.save(path)

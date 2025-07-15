@@ -18,8 +18,20 @@ def generate_flyer_view(request):
         return HttpResponseBadRequest("Invalid JSON body")
 
     required = ["title", "datetime", "location", "url"]
-    if not all(key in body for key in required):
+    missing = [key for key in required if key not in body]
+    if missing:
+        honeybadger.notify(
+            f"Flyer generation failed: missing required fields",
+            context={
+                "missing": missing,
+                "body": body,
+                "remote_ip": request.META.get("REMOTE_ADDR"),
+                "user_agent": request.META.get("HTTP_USER_AGENT"),
+                "path": request.path
+            }
+        )
         return HttpResponseBadRequest(f"Missing one of: {', '.join(required)}")
+
 
     # Optional params
     gradient = body.get("gradient")  # optional tuple like ["white", "blue", "vertical"]

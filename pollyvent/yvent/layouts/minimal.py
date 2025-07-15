@@ -25,23 +25,27 @@ class MinimalLayout(Layout):
             bounds,
             radius=40,
             outline="black",
-            width=5
+            width=10
         )
-
 
     def render(self, composer, data):
         self.validate_data(data)
-
         self.render_frame(composer)
 
         margin = composer.margin
         width = composer.width
         height = composer.height
 
-        # 1. Logo in top-left
-        render_logo(composer, data["logo_path"], x=margin, y=margin, max_width=750)
+        # 1. Logo centered top
+        render_logo(
+            composer,
+            data["logo_path"],
+            x=width // 2 - 750 // 2 + margin,
+            y=margin,
+            max_width=750
+        )
 
-        # 2. title, centered
+        # 2. Title in center
         render_title(
             composer,
             text=data["title"],
@@ -53,16 +57,30 @@ class MinimalLayout(Layout):
             angle=0
         )
 
-        # 3. QR Code in bottom right
-        qr_padding = 100
-        qr_margin = margin + qr_padding
-        qr_box_size = 400
-        qr_x = width - qr_box_size - qr_margin
-        qr_y = height - qr_box_size - qr_margin
+        # 3. Info block (bottom left)
+        info_x = margin * 2
+        info_y = height - height // 6
 
-        qr_img_width = 0
+        info_x, info_y, info_w, info_h = render_info_block(
+            composer,
+            data,
+            x=info_x,
+            y=info_y,
+            spacing=20,
+            info_font_sz=60,
+            loc_font_sz=62
+        )
+
+        # 4. QR code aligned to right of info block
+        qr_box_size = info_h + info_h //4
+        qr_padding = 20
+
         if data.get("qr_text"):
-            qr_img_width = render_qr_code(
+            qr_x = info_x + info_w + qr_padding
+            qr_y = int((info_y + (info_h // 2) - (qr_box_size // 2)) * .98)
+
+
+            render_qr_code(
                 composer,
                 data["qr_text"],
                 x=qr_x,
@@ -70,12 +88,3 @@ class MinimalLayout(Layout):
                 max_size=qr_box_size
             )
 
-        # 4. Info block (date, time, location) above QR
-        render_info_block(
-            composer,
-            data,
-            qr_x=qr_x,
-            qr_y=qr_y,
-            qr_width=qr_img_width,
-            spacing=10
-        )
