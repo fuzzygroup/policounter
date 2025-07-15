@@ -5,6 +5,7 @@ import os
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest
+from honeybadger import honeybadger
 import json
 
 @csrf_exempt
