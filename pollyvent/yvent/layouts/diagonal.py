@@ -60,8 +60,7 @@ class DiagonalLayout(Layout):
         render_info_block(
             composer,
             data,
-            qr_x=qr_x,
-            qr_y=qr_y,
-            qr_width=qr_img_width,
+            x=qr_x,
+            y=qr_y,
             spacing=10
         )
