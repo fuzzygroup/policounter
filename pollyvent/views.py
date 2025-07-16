@@ -23,12 +23,15 @@ def generate_flyer_view(request):
         body = json.loads(request.body)
     except json.JSONDecodeError as e:
         honeybadger.notify("Invalid JSON in flyer POST", context={
-            "body": request.body.decode('utf-8', errors='replace'),
+            "body_snippet": request.body.decode('utf-8', errors='replace')[:500],
+            "body_length": len(request.body),
+            "content_type": request.META.get("CONTENT_TYPE"),
             "remote_ip": request.META.get("REMOTE_ADDR"),
             "user_agent": request.META.get("HTTP_USER_AGENT"),
             "error": str(e)
         })
-        return HttpResponseBadRequest("Invalid JSON body")
+        return HttpResponseBadRequest("Invalid JSON body")  # <- Missing before
+
     
     required = ["title", "datetime", "location", "url"]
     missing = [key for key in required if key not in body]
