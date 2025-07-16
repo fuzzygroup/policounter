@@ -76,7 +76,7 @@ class MinimalLayout(Layout):
         qr_padding = 20
 
         if data.get("qr_text"):
-            qr_x = width - composer.margin - qr_box_size - qr_padding * 2
+            qr_x = width - composer.margin - qr_box_size - qr_padding * 4
             qr_y = int((info_y + (info_h // 2) - (qr_box_size // 2)) * .98)
 
 
