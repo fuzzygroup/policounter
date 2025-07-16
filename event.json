@@ -1,8 +1,9 @@
 {
-  "title": "test",
-    "datetime": "2025-07-14T18:00",
-  "location": "Indianapolis State House",
-  "url": "https://polly.indiana50501.org/events/Gksc1lhxg0",
-  "layout": "minimal"
+  "title": "Churches Shouldn't Hate",
+  "datetime": "2025-07-20T10:30", 
+  "location": "3037 Lafayette Road",
+  "url": "https://polly.indiana50501.org/events/Y6g23vQ2GE",
+  "layout": "minimal",
+  "gradient": ["#fefae0", "#fefae0", "vertical"]
 }
 
